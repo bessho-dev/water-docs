@@ -49,11 +49,18 @@
             transition: background-color 0.3s, color 0.3s;
         }
 
+        /* プログレスバー */
+        #progress-bar {
+            position: fixed; top: 0; left: var(--sidebar-width); height: 3px;
+            background-color: var(--accent-color); width: 0%; z-index: 1000;
+            transition: width 0.1s;
+        }
+
         .sidebar {
             width: var(--sidebar-width); background-color: var(--sidebar-bg);
             border-right: 1px solid var(--border-color); height: 100%;
             overflow-y: auto; padding: 2rem 1.5rem; box-sizing: border-box;
-            font-family: var(--font-sans);
+            font-family: var(--font-sans); flex-shrink: 0;
         }
         .sidebar-header {
             font-family: var(--font-serif); font-size: 1.5rem;
@@ -75,7 +82,7 @@
         .main-content {
             flex: 1;
             height: 100%; overflow-y: auto; padding: 3rem 10%;
-            box-sizing: border-box; position: relative;
+            box-sizing: border-box; position: relative; scroll-behavior: smooth;
         }
         .top-utils { position: absolute; top: 2rem; right: 4rem; z-index: 10; display: flex; gap: 0.5rem; }
         .theme-toggle {
@@ -87,11 +94,34 @@
 
         #content-area h1 { font-size: 2.5rem; font-weight: 300; letter-spacing: 0.1em;
                            border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 2rem; }
-        #content-area h2, #content-area h3 { font-weight: 400; margin-top: 3rem; letter-spacing: 0.05em; }
+        #content-area h2, #content-area h3 { font-weight: 400; margin-top: 3rem; letter-spacing: 0.05em; scroll-margin-top: 2rem; }
         #content-area p { line-height: 1.8; letter-spacing: 0.03em; opacity: 0.9; }
+        
+        /* コードブロックとコピーボタン */
+        .code-container { position: relative; margin: 1.5rem 0; }
         #content-area pre { background-color: var(--code-bg); padding: 1.5rem; border-radius: 8px;
-                            border: 1px solid var(--border-color); font-family: var(--font-mono); overflow-x: auto; position: relative; }
+                            border: 1px solid var(--border-color); font-family: var(--font-mono); overflow-x: auto; margin: 0; }
         #content-area code { font-family: var(--font-mono); }
+        .copy-btn {
+            position: absolute; top: 0.5rem; right: 0.5rem;
+            background: var(--bg-color); color: var(--text-color);
+            border: 1px solid var(--border-color); border-radius: 4px;
+            padding: 0.3rem 0.6rem; font-size: 0.75rem; cursor: pointer;
+            opacity: 0; transition: opacity 0.2s, background 0.2s; font-family: var(--font-sans);
+        }
+        .code-container:hover .copy-btn { opacity: 0.8; }
+        .copy-btn:hover { opacity: 1 !important; background: var(--hover-bg); }
+
+        /* ページ内目次 */
+        .page-toc {
+            background: var(--code-bg); border: 1px solid var(--border-color);
+            border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem; font-family: var(--font-sans);
+        }
+        .page-toc p { margin-top: 0; font-weight: bold; margin-bottom: 1rem; }
+        .page-toc ul { list-style: none; padding-left: 0; margin: 0; }
+        .page-toc li { margin-bottom: 0.5rem; }
+        .page-toc a { color: var(--text-color); text-decoration: none; opacity: 0.8; transition: color 0.2s; }
+        .page-toc a:hover { color: var(--accent-color); opacity: 1; }
         
         .meta-info { display: flex; gap: 1rem; margin-bottom: 2rem; font-family: var(--font-sans); font-size: 0.8rem; }
         .badge { padding: 0.3rem 0.8rem; border-radius: 20px; border: 1px solid var(--border-color); opacity: 0.8; }
@@ -119,45 +149,48 @@
         #tooltip .title { font-weight: bold; margin-bottom: 0.3rem; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 0.3rem; }
         #tooltip a.btn { display: inline-block; background: var(--accent-color); color: #fff; padding: 0.3rem 0.8rem; border-radius: 4px; text-decoration: none; margin-top: 10px; }
 
-        /* --- ここからスマホ対応用に追加 --- */
+        /* トップへ戻るボタン */
+        #scroll-top {
+            position: fixed; bottom: 2rem; right: 2rem; width: 40px; height: 40px;
+            border-radius: 50%; background: var(--accent-color); color: #fff;
+            border: none; cursor: pointer; font-size: 1.2rem; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            opacity: 0; pointer-events: none; transition: opacity 0.3s, transform 0.2s; transform: translateY(10px); z-index: 90;
+        }
+        #scroll-top.show { opacity: 1; pointer-events: auto; transform: translateY(0); }
+        #scroll-top:hover { transform: translateY(-3px); }
+
+        /* スマホ対応 */
         .menu-toggle {
-            display: none;
-            background: transparent; border: 1px solid var(--border-color);
+            display: none; background: transparent; border: 1px solid var(--border-color);
             color: var(--text-color); padding: 0.5rem; border-radius: 8px;
             cursor: pointer; font-size: 1.2rem; line-height: 1;
         }
-
         .sidebar-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.4); z-index: 99;
-            opacity: 0; transition: opacity 0.3s ease;
+            background: rgba(0, 0, 0, 0.4); z-index: 99; opacity: 0; transition: opacity 0.3s ease;
         }
 
         @media (max-width: 768px) {
             .menu-toggle { display: block; }
             .top-utils { top: 1rem; right: 1rem; }
-            
+            #progress-bar { left: 0; }
             .sidebar {
                 position: fixed; left: -100%; top: 0; z-index: 100;
                 transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-                width: 260px;
-                background-color: var(--bg-color); /* 透過しないように背景色を上書き */
+                width: 260px; background-color: var(--bg-color);
                 box-shadow: 2px 0 10px rgba(0,0,0,0.2);
             }
             .sidebar.active { left: 0; }
-            
             .sidebar-overlay.active { display: block; opacity: 1; }
-            
             .main-content { padding: 4.5rem 1.5rem 2rem; }
             #content-area h1 { font-size: 1.8rem; }
-            #content-area pre { padding: 1rem; font-size: 0.9rem; }
+            #scroll-top { bottom: 1.5rem; right: 1.5rem; }
         }
-        /* --- ここまで追加 --- */
-
     </style>
 </head>
 <body>
 
+    <div id="progress-bar"></div>
     <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
 
     <aside class="sidebar">
@@ -175,7 +208,7 @@
         </ul>
     </aside>
 
-    <main class="main-content">
+    <main class="main-content" id="main-scroll">
         <div class="top-utils">
             <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
             <button class="theme-toggle" onclick="toggleTheme()">Dark Mode</button>
@@ -186,6 +219,8 @@
         </div>
     </main>
 
+    <button id="scroll-top" onclick="scrollToTop()">↑</button>
+
     <div id="tooltip">
         <div class="title" id="tt-title"></div>
         <div class="desc" id="tt-desc"></div>
@@ -193,9 +228,17 @@
     </div>
 
     <script>
-        const contentArea = document.getElementById('content-area');
+        // Marked.jsのオプション設定（改行やGFMの完全適用）
+        marked.use({
+            breaks: true,
+            gfm: true
+        });
 
-        // サイドバー開閉用関数を追加
+        const contentArea = document.getElementById('content-area');
+        const mainScroll = document.getElementById('main-scroll');
+        const progressBar = document.getElementById('progress-bar');
+        const scrollTopBtn = document.getElementById('scroll-top');
+
         function toggleSidebar() {
             document.querySelector('.sidebar').classList.toggle('active');
             document.querySelector('.sidebar-overlay').classList.toggle('active');
@@ -203,16 +246,32 @@
 
         function toggleTheme() {
             const body = document.documentElement;
-            const currentTheme = body.getAttribute('data-theme');
-            const btn = document.querySelector('.theme-toggle');
-            if (currentTheme === 'dark') {
+            if (body.getAttribute('data-theme') === 'dark') {
                 body.removeAttribute('data-theme');
-                btn.textContent = 'Dark Mode';
+                document.querySelector('.theme-toggle').textContent = 'Dark Mode';
             } else {
                 body.setAttribute('data-theme', 'dark');
-                btn.textContent = 'Light Mode';
+                document.querySelector('.theme-toggle').textContent = 'Light Mode';
             }
         }
+
+        function scrollToTop() {
+            mainScroll.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // スクロール時の処理（プログレスバー＆トップへ戻るボタン）
+        mainScroll.addEventListener('scroll', () => {
+            const scrollTop = mainScroll.scrollTop;
+            const scrollHeight = mainScroll.scrollHeight - mainScroll.clientHeight;
+            const scrolled = (scrollTop / scrollHeight) * 100;
+            progressBar.style.width = scrolled + '%';
+
+            if (scrollTop > 300) {
+                scrollTopBtn.classList.add('show');
+            } else {
+                scrollTopBtn.classList.remove('show');
+            }
+        });
 
         async function loadMarkdown(path) {
             if (!path) path = 'index';
@@ -221,29 +280,83 @@
                 if (!response.ok) throw new Error('File not found');
                 
                 let text = await response.text();
-                text = text.replace(/:::version\n([\s\S]*?)\n:::/g, 
-                    '<div class="meta-info"><div class="badge">$1</div></div>');
-          
-                text = text.replace(/:::info\n([\s\S]*?)\n:::/g, 
-                    '<div class="callout info"><span class="icon">ℹ️</span><div><strong>補足情報:</strong><br>$1</div></div>');
-                text = text.replace(/:::warning\n([\s\S]*?)\n:::/g, 
-                    '<div class="callout warning"><span class="icon">💡</span><div><strong>注意点:</strong><br>$1</div></div>');
+                
+                // 独自記法のパース
+                text = text.replace(/:::version\n([\s\S]*?)\n:::/g, '<div class="meta-info"><div class="badge">$1</div></div>');
+                text = text.replace(/:::info\n([\s\S]*?)\n:::/g, '<div class="callout info"><span class="icon">ℹ️</span><div><strong>補足情報:</strong><br>$1</div></div>');
+                text = text.replace(/:::warning\n([\s\S]*?)\n:::/g, '<div class="callout warning"><span class="icon">💡</span><div><strong>注意点:</strong><br>$1</div></div>');
 
-                text = text.replace(/\{\{([^|]+)\|([^|]+)\|([^}]+)\}\}/g, 
-                    '<span class="dict-word" data-word="$1" data-desc="$2" data-link="$3">$1</span>');
+                // ポップアップ辞書（リンクなしでも動作するように正規表現を修正）
+                text = text.replace(/\{\{([^|]+)\|([^|}]+)(?:\|([^}]+))?\}\}/g, (match, word, desc, link) => {
+                    const linkAttr = link ? `data-link="${link}"` : '';
+                    return `<span class="dict-word" data-word="${word}" data-desc="${desc}" ${linkAttr}>${word}</span>`;
+                });
 
+                // MarkdownのHTML化
                 contentArea.innerHTML = marked.parse(text);
+                
+                // 機能の初期化
                 setupTooltips();
+                setupCodeBlocks();
+                generateTOC();
                 updateSidebarActive(path);
-                document.querySelector('.main-content').scrollTop = 0;
+                mainScroll.scrollTop = 0;
 
             } catch (error) {
                 contentArea.innerHTML = `
                     <h1>404 Not Found</h1>
                     <p>指定されたドキュメント (<code>docs/${path}.md</code>) が見つかりませんでした。</p>
-                    <p style="opacity:0.6; font-size:0.9rem;">※ローカルで開いている場合、ブラウザのセキュリティ(CORS)によりファイルが読み込めない可能性があります。VSCodeの「Live Server」などのローカルサーバー経由で開いてください。</p>
                 `;
             }
+        }
+
+        // ページ内目次の自動生成
+        function generateTOC() {
+            const h1 = contentArea.querySelector('h1');
+            const headings = contentArea.querySelectorAll('h2, h3');
+            if (headings.length < 2) return; // 見出しが少ない場合は作らない
+
+            const toc = document.createElement('div');
+            toc.className = 'page-toc';
+            toc.innerHTML = '<p>目次</p><ul id="toc-list"></ul>';
+            const ul = toc.querySelector('#toc-list');
+
+            headings.forEach((h, index) => {
+                if (!h.id) h.id = 'heading-' + index;
+                const li = document.createElement('li');
+                li.style.paddingLeft = h.tagName === 'H3' ? '1.5rem' : '0';
+                li.innerHTML = `<a href="#${h.id}" onclick="event.preventDefault(); document.getElementById('${h.id}').scrollIntoView({behavior: 'smooth'});">${h.textContent}</a>`;
+                ul.appendChild(li);
+            });
+
+            // h1の下（なければ一番上）に挿入
+            if (h1 && h1.nextSibling) {
+                contentArea.insertBefore(toc, h1.nextSibling);
+            } else {
+                contentArea.insertBefore(toc, contentArea.firstChild);
+            }
+        }
+
+        // コードブロックのコピーボタン追加
+        function setupCodeBlocks() {
+            contentArea.querySelectorAll('pre').forEach(pre => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'code-container';
+                pre.parentNode.insertBefore(wrapper, pre);
+                wrapper.appendChild(pre);
+
+                const btn = document.createElement('button');
+                btn.className = 'copy-btn';
+                btn.textContent = 'Copy';
+                btn.onclick = () => {
+                    const code = pre.querySelector('code').innerText;
+                    navigator.clipboard.writeText(code).then(() => {
+                        btn.textContent = 'Copied!';
+                        setTimeout(() => btn.textContent = 'Copy', 2000);
+                    });
+                };
+                wrapper.appendChild(btn);
+            });
         }
 
         function updateSidebarActive(path) {
@@ -254,7 +367,6 @@
                 }
             });
 
-            // スマホ時に、リンクをクリックしたら自動でサイドバーを閉じる処理を追加
             if (window.innerWidth <= 768) {
                 document.querySelector('.sidebar').classList.remove('active');
                 document.querySelector('.sidebar-overlay').classList.remove('active');
@@ -271,11 +383,18 @@
                 word.addEventListener('mouseenter', (e) => {
                     const rect = e.target.getBoundingClientRect();
                     titleEl.textContent = e.target.getAttribute('data-word');
-                    descEl.textContent = e.target.getAttribute('data-desc');
-                    linkEl.href = e.target.getAttribute('data-link');
+                    descEl.innerHTML = e.target.getAttribute('data-desc').replace(/\n/g, '<br>');
                     
-                    tooltip.style.left = `${rect.left + window.scrollX}px`;
-                    tooltip.style.top = `${rect.bottom + window.scrollY + 8}px`;
+                    const link = e.target.getAttribute('data-link');
+                    if (link) {
+                        linkEl.href = link;
+                        linkEl.style.display = 'inline-block';
+                    } else {
+                        linkEl.style.display = 'none';
+                    }
+                    
+                    tooltip.style.left = `${rect.left}px`;
+                    tooltip.style.top = `${rect.bottom + 8}px`;
                     tooltip.classList.add('show');
                 });
 
