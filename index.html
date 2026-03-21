@@ -23,7 +23,6 @@
             --callout-info-bg: rgba(96, 165, 250, 0.08);
             --callout-warn-bg: rgba(251, 191, 36, 0.1);
             --callout-warn-border: #fbbf24;
-            
             --font-serif: "Noto Serif JP", "Noto Serif", serif;
             --font-sans: "Noto Sans JP", sans-serif;
             --font-mono: "JetBrains Mono", monospace;
@@ -74,10 +73,11 @@
         }
 
         .main-content {
-            flex: 1; height: 100%; overflow-y: auto; padding: 3rem 10%;
+            flex: 1;
+            height: 100%; overflow-y: auto; padding: 3rem 10%;
             box-sizing: border-box; position: relative;
         }
-        .top-utils { position: absolute; top: 2rem; right: 4rem; z-index: 10; }
+        .top-utils { position: absolute; top: 2rem; right: 4rem; z-index: 10; display: flex; gap: 0.5rem; }
         .theme-toggle {
             background: transparent; border: 1px solid var(--border-color);
             color: var(--text-color); padding: 0.5rem 1rem; border-radius: 20px;
@@ -85,10 +85,12 @@
         }
         .theme-toggle:hover { background: var(--text-color); color: var(--bg-color); }
 
-        #content-area h1 { font-size: 2.5rem; font-weight: 300; letter-spacing: 0.1em; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 2rem; }
+        #content-area h1 { font-size: 2.5rem; font-weight: 300; letter-spacing: 0.1em;
+                           border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 2rem; }
         #content-area h2, #content-area h3 { font-weight: 400; margin-top: 3rem; letter-spacing: 0.05em; }
         #content-area p { line-height: 1.8; letter-spacing: 0.03em; opacity: 0.9; }
-        #content-area pre { background-color: var(--code-bg); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border-color); font-family: var(--font-mono); overflow-x: auto; position: relative; }
+        #content-area pre { background-color: var(--code-bg); padding: 1.5rem; border-radius: 8px;
+                            border: 1px solid var(--border-color); font-family: var(--font-mono); overflow-x: auto; position: relative; }
         #content-area code { font-family: var(--font-mono); }
         
         .meta-info { display: flex; gap: 1rem; margin-bottom: 2rem; font-family: var(--font-sans); font-size: 0.8rem; }
@@ -108,17 +110,55 @@
 
         #tooltip {
             position: absolute; background: var(--text-color); color: var(--bg-color);
-            padding: 1rem; border-radius: 8px; font-family: var(--font-sans);
-            font-size: 0.85rem; width: max-content; max-width: 250px;
+            padding: 1rem; border-radius: 8px; font-family: var(--font-sans); font-size: 0.85rem;
+            width: max-content; max-width: 250px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.2); pointer-events: none;
             opacity: 0; transform: translateY(10px); transition: opacity 0.2s, transform 0.2s; z-index: 1000;
         }
         #tooltip.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
         #tooltip .title { font-weight: bold; margin-bottom: 0.3rem; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 0.3rem; }
         #tooltip a.btn { display: inline-block; background: var(--accent-color); color: #fff; padding: 0.3rem 0.8rem; border-radius: 4px; text-decoration: none; margin-top: 10px; }
+
+        /* --- ここからスマホ対応用に追加 --- */
+        .menu-toggle {
+            display: none;
+            background: transparent; border: 1px solid var(--border-color);
+            color: var(--text-color); padding: 0.5rem; border-radius: 8px;
+            cursor: pointer; font-size: 1.2rem; line-height: 1;
+        }
+
+        .sidebar-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.4); z-index: 99;
+            opacity: 0; transition: opacity 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            .menu-toggle { display: block; }
+            .top-utils { top: 1rem; right: 1rem; }
+            
+            .sidebar {
+                position: fixed; left: -100%; top: 0; z-index: 100;
+                transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                width: 260px;
+                background-color: var(--bg-color); /* 透過しないように背景色を上書き */
+                box-shadow: 2px 0 10px rgba(0,0,0,0.2);
+            }
+            .sidebar.active { left: 0; }
+            
+            .sidebar-overlay.active { display: block; opacity: 1; }
+            
+            .main-content { padding: 4.5rem 1.5rem 2rem; }
+            #content-area h1 { font-size: 1.8rem; }
+            #content-area pre { padding: 1rem; font-size: 0.9rem; }
+        }
+        /* --- ここまで追加 --- */
+
     </style>
 </head>
 <body>
+
+    <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
 
     <aside class="sidebar">
         <div class="sidebar-header">Water Docs</div>
@@ -137,6 +177,7 @@
 
     <main class="main-content">
         <div class="top-utils">
+            <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
             <button class="theme-toggle" onclick="toggleTheme()">Dark Mode</button>
         </div>
 
@@ -154,6 +195,12 @@
     <script>
         const contentArea = document.getElementById('content-area');
 
+        // サイドバー開閉用関数を追加
+        function toggleSidebar() {
+            document.querySelector('.sidebar').classList.toggle('active');
+            document.querySelector('.sidebar-overlay').classList.toggle('active');
+        }
+
         function toggleTheme() {
             const body = document.documentElement;
             const currentTheme = body.getAttribute('data-theme');
@@ -169,7 +216,6 @@
 
         async function loadMarkdown(path) {
             if (!path) path = 'index';
-            
             try {
                 const response = await fetch(`docs/${path}.md`);
                 if (!response.ok) throw new Error('File not found');
@@ -182,9 +228,10 @@
                     '<div class="callout info"><span class="icon">ℹ️</span><div><strong>補足情報:</strong><br>$1</div></div>');
                 text = text.replace(/:::warning\n([\s\S]*?)\n:::/g, 
                     '<div class="callout warning"><span class="icon">💡</span><div><strong>注意点:</strong><br>$1</div></div>');
-            
+
                 text = text.replace(/\{\{([^|]+)\|([^|]+)\|([^}]+)\}\}/g, 
                     '<span class="dict-word" data-word="$1" data-desc="$2" data-link="$3">$1</span>');
+
                 contentArea.innerHTML = marked.parse(text);
                 setupTooltips();
                 updateSidebarActive(path);
@@ -206,6 +253,12 @@
                     link.classList.add('active');
                 }
             });
+
+            // スマホ時に、リンクをクリックしたら自動でサイドバーを閉じる処理を追加
+            if (window.innerWidth <= 768) {
+                document.querySelector('.sidebar').classList.remove('active');
+                document.querySelector('.sidebar-overlay').classList.remove('active');
+            }
         }
 
         function setupTooltips() {
